@@ -1,9 +1,16 @@
 #!/bin/bash 
 
 if [ ! -d /repos ]; then mkdir /repos; fi
-if [ ! -d /var/lib/mysql/mysql ]; then
-    cp -r /default-data/mysql-data/* /var/lib/mysql
+
+cd /var/lib/mysql; 
+if [ ! -d mysql ]; then 
+    cp -r /default-data/mysql-data/* .
     chown -R mysql:mysql /var/lib/mysql
+fi
+
+cd /opt/phabricator/conf/local
+if [ ! -e local.json ]; then
+    cp /default-data/phabricator-conf-local/* .
 fi
 
 service mysql start

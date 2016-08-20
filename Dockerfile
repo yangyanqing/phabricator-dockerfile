@@ -22,6 +22,9 @@ RUN echo "mysql-server mysql-server/root_password password phabricator" | debcon
 RUN echo "mysql-server mysql-server/root_password_again password phabricator" | debconf-set-selections
 RUN apt-get install -y mysql-server
 
+# 清理缓存
+RUN apt-get clean -y
+
 # 下载到本地的 Phabricator 代码
 # ADD phabricator.tar.gz /opt
 
@@ -50,12 +53,15 @@ ADD etc/apache2/sites-enabled/000-default.conf /etc/apache2/sites-enabled/
 WORKDIR /etc/php5/apache2
 RUN sed -i "s|^;opcache\.validate_timestamps.*|opcache\.validate_timestamps=0|g" php.ini
 RUN sed -i "s|^;opcache\.revalidate_freq.*|opcache.revalidate_freq=0|g" php.ini
-# RUN sed -i "s|\(post_max_size\).*|\1 = 32MB|g" php.ini
+RUN sed -i "s|\(post_max_size\).*|\1 = 33554432|g" php.ini
 
 # 备份默认生成的文件，供挂载卷使用
 RUN mkdir /default-data
-RUN cp -r /var/lib/mysql /default-data/mysql-data
-RUN cp -r /etc/mysql     /default-data/mysql-config
+RUN cp -r /var/lib/mysql                /default-data/mysql-data
+RUN cp -r /etc/mysql                    /default-data/mysql-config
+RUN cp -r /opt/phabricator/conf/local   /default-data/phabricator-conf-local
+
+WORKDIR /opt/phabricator
 
 ADD start.sh /
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-base=/home/docker-volume/phabricator
+base=/home/pha-data
 repos=$base/repos
 mysql=$base/mysql
 
@@ -15,10 +15,11 @@ function init_dir()
 init_dir $repos
 init_dir $mysql
 
-docker run -d  --name pha\
+docker run -d --name phabricator --restart=always \
     -e "BASE_URI=http://phabricator.yourcompony.com" \
     -p 80:80 \
-    -v $base/data/repos:/repos \
-    -v $base/data/mysql:/var/lib/mysql \
-    pha
+    -v $base/repos:/repos \
+    -v $base/mysql:/var/lib/mysql \
+    -v $base/phabricator-conf-local:/opt \
+    phabricator:ver
 
