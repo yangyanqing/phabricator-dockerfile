@@ -20,6 +20,6 @@ docker run -d --name phabricator --restart=always \
     -p 80:80 \
     -v $base/repos:/repos \
     -v $base/mysql:/var/lib/mysql \
-    -v $base/phabricator-conf-local:/opt \
-    phabricator:ver
+    -v $base/phabricator-conf-local:/opt/phabricator/conf/local \
+    phabricator:tag
 

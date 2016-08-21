@@ -15,7 +15,8 @@ ADD etc/apt/sources.list /etc/apt/
 RUN apt-get -qq update && \
     apt-get install -y \
             vim net-tools git git-core subversion apache2 dpkg-dev python-pygments \
-            php5 php5-mysql php5-gd php5-dev php5-curl php-apc php5-cli php5-json
+            php5 php5-mysql php5-gd php5-dev php5-curl php-apc php5-cli php5-json \
+            openjdk-7-jdk
 RUN a2enmod rewrite
 
 RUN echo "mysql-server mysql-server/root_password password phabricator" | debconf-set-selections
@@ -42,6 +43,7 @@ RUN bin/config set phabricator.timezone "Asia/Shanghai"
 RUN bin/config set metamta.mail-adapter "PhabricatorMailImplementationPHPMailerAdapter"
 RUN bin/config set repository.default-local-path "/repos"
 RUN bin/config set storage.mysql-engine.max-size "1000000"
+RUN bin/config set search.elastic.host  "http://127.0.0.1:9200"
 
 # MySQL config
 ADD etc/mysql/my.cnf /etc/mysql/
@@ -61,13 +63,18 @@ RUN cp -r /var/lib/mysql                /default-data/mysql-data
 RUN cp -r /etc/mysql                    /default-data/mysql-config
 RUN cp -r /opt/phabricator/conf/local   /default-data/phabricator-conf-local
 
+ADD elasticsearch-1.7.3.tar.gz /opt/
+RUN useradd elasticsearch
+RUN chown -R elasticsearch:elasticsearch /opt/elasticsearch-1.7.3
+
 WORKDIR /opt/phabricator
 
 ADD start.sh /
 
-VOLUME ["/etc/mysql", "/var/lib/mysql"] 
+VOLUME ["/etc/mysql", "/var/lib/mysql", "/repos", "/opt/phabricator/conf/local"] 
 
 EXPOSE 80
 
 ENTRYPOINT ["/start.sh"]
+#CMD ["sleep", "10000"]
 
