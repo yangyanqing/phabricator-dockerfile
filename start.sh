@@ -1,22 +1,28 @@
 #!/bin/bash 
 
-if [ ! -d /repos ]; then mkdir /repos; fi
-
+#
+# MySQL
+#
 cd /var/lib/mysql; 
 if [ ! -d mysql ]; then 
     cp -r /default-data/mysql-data/* .
-    chown -R mysql:mysql /var/lib/mysql
 fi
+chown -R mysql:mysql /var/lib/mysql
+service mysql start
+service apache2 start
 
+#
+# elasticsearch
+#
+sudo -u elasticsearch /opt/elasticsearch-1.7.3/bin/elasticsearch -d
+
+#
+# Configuration of phabircator
+#
 cd /opt/phabricator/conf/local
 if [ ! -e local.json ]; then
     cp /default-data/phabricator-conf-local/* .
 fi
-
-service mysql start
-service apache2 start
-
-sudo -u elasticsearch /opt/elasticsearch-1.7.3/bin/elasticsearch -d
 
 /opt/phabricator/bin/config set phabricator.base-uri $BASE_URI
 /opt/phabricator/bin/storage upgrade --force 
@@ -29,7 +35,17 @@ else
     chown -R elasticsearch:elasticsearch /opt/elasticsearch-1.7.3/data
 fi
 
+#
+# storage
+#
 chown -R www-data:www-data /storage
+
+#
+# Git
+#
+if [ ! -d /repos ]; then mkdir /repos; fi
+if [ ! -d /var/run/sshd ]; then mkdir /var/run/sshd; fi
+/usr/sbin/sshd -f /etc/ssh/sshd_config.phabricator
 
 while [ 1 ]; do
     sleep 10000

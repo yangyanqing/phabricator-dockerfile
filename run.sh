@@ -16,7 +16,7 @@ init_dir $repos
 init_dir $mysql
 
 docker run -d --name phabricator --restart=always \
-    -e "BASE_URI=http://phabricator.yourcompony.com" \
+    -e "BASE_URI=http://pha.ccidnj.com/" \
     -p 22:22 \
     -p 80:80 \
     -v $base/repos:/repos \

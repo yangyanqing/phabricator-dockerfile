@@ -16,7 +16,7 @@ RUN apt-get -qq update && \
     apt-get install -y \
             vim net-tools git git-core subversion apache2 dpkg-dev python-pygments \
             php5 php5-mysql php5-gd php5-dev php5-curl php-apc php5-cli php5-json \
-            openjdk-7-jdk
+            openjdk-7-jdk openssh-server
 RUN a2enmod rewrite
 
 RUN echo "mysql-server mysql-server/root_password password phabricator" | debconf-set-selections
@@ -27,7 +27,7 @@ RUN apt-get install -y mysql-server
 RUN apt-get clean -y
 
 # 下载到本地的 Phabricator 代码
-# ADD phabricator.tar.gz /opt
+#ADD phabricator.tar.gz /opt
 
 # 在网上实时下载代码
 WORKDIR /opt
@@ -68,6 +68,15 @@ RUN cp -r /opt/phabricator/conf/local   /default-data/phabricator-conf-local
 ADD elasticsearch-1.7.3.tar.gz /opt/
 RUN useradd elasticsearch
 RUN chown -R elasticsearch:elasticsearch /opt/elasticsearch-1.7.3
+
+WORKDIR /opt/phabricator
+RUN useradd git
+RUN mkdir /home/git
+RUN echo "git ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN sed -i "s|git:\!|git:NP|g" /etc/shadow
+RUN sed -i "s|\(git.*\)|\1/bin/sh|g" /etc/passwd
+ADD etc/ssh/sshd_config.phabricator     /etc/ssh/
+ADD usr/libexec/phabricator-ssh-hook.sh /usr/libexec/
 
 WORKDIR /opt/phabricator
 
