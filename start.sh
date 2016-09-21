@@ -25,7 +25,11 @@ sudo -u elasticsearch /opt/elasticsearch-1.7.3/bin/elasticsearch -d
 if [ ! -d /opt/elasticsearch-1.7.3/data ]; then
     /opt/phabricator/bin/search init
     /opt/phabricator/bin/search index --all
+else
+    chown -R elasticsearch:elasticsearch /opt/elasticsearch-1.7.3/data
 fi
+
+chown -R www-data:www-data /storage
 
 while [ 1 ]; do
     sleep 10000

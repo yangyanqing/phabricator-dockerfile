@@ -42,7 +42,7 @@ RUN bin/config set pygments.enabled "true"
 RUN bin/config set phabricator.timezone "Asia/Shanghai"
 RUN bin/config set metamta.mail-adapter "PhabricatorMailImplementationPHPMailerAdapter"
 RUN bin/config set repository.default-local-path "/repos"
-RUN bin/config set storage.mysql-engine.max-size "1000000"
+RUN bin/config set storage.mysql-engine.max-size "33554432"
 RUN bin/config set search.elastic.host  "http://127.0.0.1:9200"
 
 # MySQL config
@@ -55,7 +55,9 @@ ADD etc/apache2/sites-enabled/000-default.conf /etc/apache2/sites-enabled/
 WORKDIR /etc/php5/apache2
 RUN sed -i "s|^;opcache\.validate_timestamps.*|opcache\.validate_timestamps=0|g" php.ini
 RUN sed -i "s|^;opcache\.revalidate_freq.*|opcache.revalidate_freq=0|g" php.ini
+RUN sed -i "s|^;\(always_populate_raw_post_data\).*|\1 = -1|g" php.ini
 RUN sed -i "s|\(post_max_size\).*|\1 = 33554432|g" php.ini
+RUN sed -i "s|\(upload_max_filesize\).*|\1 = 20M|g" php.ini
 
 # 备份默认生成的文件，供挂载卷使用
 RUN mkdir /default-data
@@ -73,7 +75,7 @@ ADD start.sh /
 
 VOLUME ["/etc/mysql", "/var/lib/mysql", "/repos", "/opt/phabricator/conf/local"] 
 
-EXPOSE 80
+EXPOSE 22 80
 
 ENTRYPOINT ["/start.sh"]
 #CMD ["sleep", "10000"]
